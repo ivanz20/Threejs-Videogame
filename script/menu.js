@@ -155,7 +155,19 @@ $("#btn-pausa").click(function(){
 });
 
 $("#btn-unjugador").click(function(){
-    window.location.href = "http://127.0.0.1:5500/scene1game.html"
+    var nivel = $('#select-nivel').val();
+    console.log(nivel);
+    switch(nivel){
+      case '1':
+        window.location.href = "http://127.0.0.1:5500/scene1game.html"
+        break;
+      case '2':
+        window.location.href = "http://127.0.0.1:5500/scene2game.html"
+        break;
+      case '3':
+        window.location.href = "http://127.0.0.1:5500/scene3game.html"
+        break;
+    }
 });
 $("#btn-abandonar").click(function(){
     window.location.href = "http://127.0.0.1:5500"
