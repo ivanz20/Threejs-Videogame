@@ -31,7 +31,7 @@ class Escena1 {
     const fov = 60;
     const aspect = 1920 / 1080;
     const near = 0.1;
-    const far = 1000.0;
+    const far = 4000.0;
     this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     // this._camera.rotation.y = 1.5;
     this._camera.position.x = 300;
