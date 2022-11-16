@@ -27,6 +27,19 @@ let algo = false;
 let algo2 = false;
 let renderers = [];
 let cameras = [];
+var jugadores = [];
+
+var userName;
+let cuca;
+var update = false;
+let personajePrincipal;
+var purple9;
+var collisionObjects = [];
+let dahyun;
+let chaeyoung;
+var col;
+let man;
+let smile;
 
 $(document).ready(function () {
   setupScene();
@@ -34,8 +47,91 @@ $(document).ready(function () {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
   initializeFirebase();
-  createPlayer();
+
+  const dbRefPlayers = firebase.database().ref().child("jugadores");
+
+  dbRefPlayers.on("child_added", (snap) => {
+    var player = snap.val();
+    var key = snap.key;
+
+    var newplayer = new THREE.FBXLoader();
+    newplayer.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
+      personaje.position.y = 2;      //altura estaba en 2 xd
+      personaje.position.x = -15;    //izq-der
+      personaje.position.z = -15;    //profundidad lejor o cerca
+      personaje.scale.set(0.05, 0.05, 0.05);
+      personaje.name = player.nombre;
+
+      const anim = new THREE.FBXLoader();
+      anim.load('resources/jugador2/Idle.fbx', (anim) => {
+        var diosayudame = new THREE.AnimationMixer(personaje);
+        idle = diosayudame.clipAction(anim.animations[0]);
+        idle.weight = 1;
+        idle.play();
+        mixers.push(diosayudame);
+      });
+
+      const anim2 = new THREE.FBXLoader();
+      anim2.load('resources/jugador2/Running.fbx', (anim) => {
+        var diosayudame2 = new THREE.AnimationMixer(personaje);
+        run = diosayudame2.clipAction(anim.animations[0]);
+        run.weight = 0;
+        run.play();
+        mixers.push(diosayudame2);
+      });
+
+      const anim3 = new THREE.FBXLoader();
+      anim3.load('resources/jugador2/Jumping.fbx', (anim) => {
+        var diosayudame2 = new THREE.AnimationMixer(personaje);
+        jump = diosayudame2.clipAction(anim.animations[0]);
+        jump.weight = 0;
+        jump.play();
+        mixers.push(diosayudame2);
+      });
+      scene.add(personaje);
+    }, (xhr) => {
+      console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+    });
+
+    newplayer.player = player;
+    newplayer.key = key;
+    jugadores.push(newplayer);
+  });
+
+  dbRefPlayers.on("child_changed", (snap) => {
+
+    var player = snap.val();
+    var key = snap.key;
+    var nombre = player.nombre;
+    let personajePrincipalxd = scene.getObjectByName(nombre);
+
+    //  for (var i = 0; i < jugadores.length; i++) {
+    //   if (jugadores[i].key == key) {
+    personajePrincipalxd.rotation.y = player.rotation.y;
+    personajePrincipalxd.position.z = player.position.z;
+    personajePrincipalxd.position.x = player.position.x;
+    // }
+    //}
+
+  });
+
   render();
+
+  $(document).on('click', '#boton', function (e) {
+    e.preventDefault();
+    var position = { x: 0, y: 2, z: 0 };
+    var rotation = { x: 0, y: 0, z: 0 };
+    let nombre = document.querySelector("#txtName").value;
+
+    userName = nombre;
+
+    var newPlayer = dbRefPlayers.push();
+    newPlayer.set({
+      nombre,
+      position,
+      rotation,
+    });
+  });
 });
 
 function initializeFirebase() {
@@ -50,49 +146,23 @@ function initializeFirebase() {
   firebase.initializeApp(firebaseConfig);
 }
 
-function createPlayer() {
-  var position = { x: 0, y: 2, z: 0 };
-  var rotation = { x: 0, y: 0, z: 0 };
-  const dbRefPlayers = firebase.database().ref().child("jugadores");
+function setupScene() {
+  //INICIAMOS EL RENDERER
+  renderer = new THREE.WebGLRenderer({ precision: "mediump" });
+  renderer.setClearColor(new THREE.Color(0, 0, 0));
+  renderer.setPixelRatio(visibleSize.width / visibleSize.height);
+  renderer.setSize(visibleSize.width, visibleSize.height);
 
-  let zapato = "zapato";
-  let numero = Math.floor(Math.random() * 777);
-  let nombre = zapato + numero;
-
-  var newPlayer = dbRefPlayers.push();
-  newPlayer.set({
-    nombre,
-    position,
-    rotation,
-  });
-}
-
-
-function createRenderer(color) {
-  let renderer = new THREE.WebGLRenderer({ precision: "mediump" });
-  renderer.setClearColor(color);
-  renderer.setPixelRatio((visibleSize.width / 2) / visibleSize.height);
-  renderer.setSize(visibleSize.width / 2, visibleSize.height);
-  renderers.push(renderer);
-}
-
-function createCamera() {
-  let camera = new THREE.PerspectiveCamera(
+  //INICIALIZAMOS LA CAMARA
+  camera = new THREE.PerspectiveCamera(
     100,                                                                //angulo de vision
     visibleSize.width / visibleSize.height,   //aspect ratio
     0.1,                                                                //que tan cerca
     100                                                                 //que tan lejos
   );
-  cameras.push(camera);
-}
 
-function setupScene() {
-
-  createRenderer(new THREE.Color(0, 0, 0));     //renderer player 1
-  createRenderer(new THREE.Color(0.2, 0, 0)); //renderer player 2
-
-  createCamera();
-  createCamera();
+  //camera.position.z = 2;
+  //camera.position.y = 2;
 
   //INICIALIZAMOS LA ESCENA
   scene = new THREE.Scene();
@@ -111,27 +181,36 @@ function setupScene() {
   var geometry = new THREE.BoxGeometry(1, 1, 1);
   cube = new THREE.Mesh(geometry, material)
   //GRID
+  cube.name = "rock";
+  dahyun = cube;
+
   var grid = new THREE.GridHelper(50, 10, 0xffffff, 0xffffff);
 
+  ////////MIS OBJETOS///////////////////////////////////////////////////////////
+
+  $("#scene-section").append(renderer.domElement);//añado mis objetos 
+
   ////////////////AJUSTE DE OBJETOS/////////////////////
+  //third person camera
+  //grid.position.y = -1;
   cube.position.y = 2;
 
-  cameras[0].position.z = 20;    //lejos o cerca
-  cameras[0].position.y = 20;      //altura
-  cameras[0].rotation.x = 5.3;    //angulo camara 4.8
+  camera.position.z = 20;    //lejos o cerca
+  camera.position.y = 20;      //altura
+  camera.rotation.x = 5.3;    //angulo camara 4.8
 
-  cameras[1].position.z = 20;    //lejos o cerca
-  cameras[1].position.y = 20;      //altura
-  cameras[1].rotation.x = 5.3;    //angulo camara 4.8
+  //camera.position.z = 0;    //lejos o cercs
+  //camera.position.y = 2;      //altura
+  //camera.rotation.x = 0;    //angulo camara
+
+  //cube.position.x = 5;
+  //cube.add(camera);
 
   ////////////AÑADO OBJETOS A MI ESCENA///////////////////
   scene.add(ambientLight);
   scene.add(directionalLight);
   scene.add(cube);
-  scene.add(grid);
-
-  $("#scene-section1").append(renderers[0].domElement);//añado mis objetos 
-  $("#scene-section2").append(renderers[1].domElement);//añado mis objetos 
+  //scene.add(grid);
 }
 
 function onKeyDown(event) {
@@ -140,12 +219,6 @@ function onKeyDown(event) {
 
 function onKeyUp(event) {
   keys[String.fromCharCode(event.keyCode)] = false;
-  //run.crossFadeFrom(idle, 0.8, true);
-  //run.reset();
-  run.weight = 0;
-  run2.weight = 0;
-  //  run.reset();
-  //idle.weight = 1;
 }
 
 function render() {
@@ -154,89 +227,116 @@ function render() {
 
   var yaw = 0;				//leff or right
   var forward = 0; 		//forward backward
+  var currentPlayer;
+  var currentKey;
+  var place;
 
   if (keys["A"]) {
-    yaw = 3;
-    run.weight = 1;
+    yaw = 5;
   } else if (keys["D"]) {
-    yaw = -3;
-    run.weight = 1;
+    yaw = -5;
   }
   if (keys["W"]) {
     forward = -5;
-    run.weight = 1;
   } else if (keys["S"]) {
     forward = 5;
-    run.weight = 1;
   }
 
-  if (keys["P"]) {
-    algo = true;
-  }
-
-  if (algo == true) {
-    //jump.reset();
-    jump.weight = 1;
-    jump.setLoop(THREE.LoopOnce, 1);
-    jump.reset();
-    algo = false;
-    //jump.weight = 0;
-  }
-
-  personaje_globalxd = scene.getObjectByName("player1");
-  personaje_globalxd.rotation.y += yaw * deltaTime;
-  personaje_globalxd.translateZ(forward * deltaTime);
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  var yaw2 = 0;				//leff or right
-  var forward2 = 0; 		//forward backward
-
-  if (keys["J"]) {
-    yaw2 = 3;
-    run2.weight = 1;
-  } else if (keys["L"]) {
-    yaw2 = -3;
-    run2.weight = 1;
-
-  }
-  if (keys["I"]) {
-    forward2 = -5;
-    run2.weight = 1;
-
-  } else if (keys["K"]) {
-    forward2 = 5;
-    run2.weight = 1;
-  }
-
-  if (keys["M"]) {
-    algo2 = true;
-  }
-
-  if (algo2 == true) {
-    //jump.reset();
-    jump2.weight = 1;
-    jump2.setLoop(THREE.LoopOnce, 1);
-    jump2.reset();
-    algo2 = false;
-    //jump.weight = 0;
-  }
-
-  personaje_globalxd2 = scene.getObjectByName("player2");
-  personaje_globalxd2.rotation.y += yaw2 * deltaTime;
-  personaje_globalxd2.translateZ(forward2 * deltaTime);
-
-  if (mixers.length > 0) {
-    for (var i = 0; i < mixers.length; i++) {
-      mixers[i].update(deltaTime);
+  for (var i = 0; i < jugadores.length; i++) {
+    if (jugadores[i].player.nombre == userName) {
+      currentPlayer = jugadores[i].player;
+      currentKey = jugadores[i].key;
+      place = i;
+      update = true;
     }
   }
 
-  if (mixers_2.length > 0) {
-    for (var i = 0; i < mixers_2.length; i++) {
-      mixers_2[i].update(deltaTime);
+  if (update) {
+
+    man = scene.getObjectByName("rock");
+    personajePrincipal = scene.getObjectByName(currentPlayer.nombre);
+    personajePrincipal.rotation.y += yaw * deltaTime;
+    personajePrincipal.translateZ(forward * deltaTime);
+
+    currentPlayer.rotation.y = personajePrincipal.rotation.y;
+    currentPlayer.position.x = personajePrincipal.position.x;
+    currentPlayer.position.z = personajePrincipal.position.z;
+    //updateFirebase(currentPlayer, currentKey);
+
+
+
+
+    //console.log(personajePrincipal.children[1].geometry.computeBoundingBox());
+    //console.log(cube);
+
+
+    try {
+      // var scenary = new THREE.FBXLoader();
+      let cube1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+      cube1BB.setFromObject(personajePrincipal);
+
+      let cube2BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+      cube2BB.setFromObject(man);
+
+      //console.log(cube1BB);
+
+      // smile = detectCollision(personajePrincipal, man);
+      //console.log(smile);
+
+      if (cube2BB.intersectsBox(cube1BB)) {
+        console.log("xd")
+      }
+      else {
+        console.log("dx");
+      }
+
+    } catch (error) {
+      console.log(error);
     }
+
+
   }
-  renderers[0].render(scene, cameras[0]);
-  renderers[1].render(scene, cameras[1]);
+
+  renderer.render(scene, camera);
+}
+//geometry.boundingBox
+function detectCollision(object1, object2) {
+
+  for (var i = 0; i < object1.children.length; i++) {
+
+    for (var j = 0; j < object2.children.length; j++) {
+
+      object1.children[i].geometry.computeBoundingBox();
+      object2.children[i].geometry.computeBoundingBox();
+      object1.updateMatrixWorld();
+      object2.updateMatrixWorld();
+
+      var box1 = object1.children[i].geometry.boundingBox.clone();
+      box1.applyMatrix4(object1.matrixWorld);
+
+      var box2 = object2.children[i].geometry.boundingBox.clone();
+      box2.applyMatrix4(object2.matrixWorld);
+      if (box1.intersectsBox(box2)) {
+        return true;
+        console.log("dahyun");
+        break;
+      }
+
+    }
+
+  }
+
+  return false;
+}
+
+
+function updateFirebase(currentPlayer, currentKey) {
+  const dbRefPlayers = firebase.database().ref().child(`jugadores/${currentKey}`);
+  dbRefPlayers.update({
+    nombre: currentPlayer.nombre,
+    position: currentPlayer.position,
+    rotation: currentPlayer.rotation
+  })
 }
 
 function cargar_objetos() {
@@ -265,15 +365,12 @@ function cargar_objetos() {
   //SCENERY
 
 
-
-  //PLAYER 1
-  player1 = new THREE.FBXLoader();
-  player1.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
-    personaje.position.y = 2;      //altura
+  var newplayer = new THREE.FBXLoader();
+  newplayer.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
+    personaje.position.y = -4;      //altura estaba en 2 xd
     personaje.position.x = -15;    //izq-der
     personaje.position.z = -15;    //profundidad lejor o cerca
     personaje.scale.set(0.05, 0.05, 0.05);
-    personaje.name = "player1";
 
     const anim = new THREE.FBXLoader();
     anim.load('resources/jugador2/Idle.fbx', (anim) => {
@@ -301,55 +398,11 @@ function cargar_objetos() {
       jump.play();
       mixers.push(diosayudame2);
     });
-
     scene.add(personaje);
   }, (xhr) => {
     console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
   });
-  //PLAYER 1
 
-  //PLAYER 2
-  player2 = new THREE.FBXLoader();
-  player2.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
-    personaje.position.y = 2;      //altura
-    personaje.position.x = 15;    //izq-der
-    personaje.position.z = -15;    //profundidad lejor o cerca
-    personaje.scale.set(0.05, 0.05, 0.05);
-    personaje.name = "player2";
-
-    const anim = new THREE.FBXLoader();
-    anim.load('resources/jugador2/Idle.fbx', (anim) => {
-      var diosayudame = new THREE.AnimationMixer(personaje);
-      idle2 = diosayudame.clipAction(anim.animations[0]);
-      idle2.weight = 1;
-      idle2.play();
-      mixers_2.push(diosayudame);
-    });
-
-    const anim2 = new THREE.FBXLoader();
-    anim2.load('resources/jugador2/Running.fbx', (anim) => {
-      var diosayudame2 = new THREE.AnimationMixer(personaje);
-      run2 = diosayudame2.clipAction(anim.animations[0]);
-      run2.weight = 0;
-      run2.play();
-      mixers_2.push(diosayudame2);
-    });
-
-    const anim3 = new THREE.FBXLoader();
-    anim3.load('resources/jugador2/Jumping.fbx', (anim) => {
-      var diosayudame2 = new THREE.AnimationMixer(personaje);
-      jump2 = diosayudame2.clipAction(anim.animations[0]);
-      jump2.weight = 0;
-      jump2.play();
-      mixers_2.push(diosayudame2);
-    });
-
-    scene.add(personaje);
-  }, (xhr) => {
-    console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-    flag = true;
-  });
-  //PLAYER 1
 
 
 
@@ -417,7 +470,6 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-
   var purple7 = new THREE.FBXLoader();
   purple7.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
     object_purple_square.position.z = 15;    //lejos o cercs
@@ -438,7 +490,7 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple9 = new THREE.FBXLoader();
+  purple9 = new THREE.FBXLoader();
   purple9.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
     object_purple_square.position.z = 15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
@@ -448,5 +500,13 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-
+  collisionObjects.push(purple1);
+  collisionObjects.push(purple2);
+  collisionObjects.push(purple3);
+  collisionObjects.push(purple4);
+  collisionObjects.push(purple5);
+  collisionObjects.push(purple6);
+  collisionObjects.push(purple7);
+  collisionObjects.push(purple8);
+  collisionObjects.push(purple9);
 }
