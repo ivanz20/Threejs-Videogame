@@ -30,7 +30,6 @@ let cameras = [];
 var jugadores = [];
 
 var userName;
-let cuca;
 var update = false;
 let personajePrincipal;
 var purple9;
@@ -38,8 +37,9 @@ var collisionObjects = [];
 let dahyun;
 let chaeyoung;
 var col;
+let supreme;
 let man;
-let smile;
+var currentPlayer;
 
 $(document).ready(function () {
   setupScene();
@@ -57,37 +57,38 @@ $(document).ready(function () {
     var newplayer = new THREE.FBXLoader();
     newplayer.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
       personaje.position.y = 2;      //altura estaba en 2 xd
-      personaje.position.x = -15;    //izq-der
-      personaje.position.z = -15;    //profundidad lejor o cerca
+      personaje.position.x = -17;    //izq-der
+      personaje.position.z = -20;    //profundidad lejor o cerca
       personaje.scale.set(0.05, 0.05, 0.05);
       personaje.name = player.nombre;
 
-      const anim = new THREE.FBXLoader();
-      anim.load('resources/jugador2/Idle.fbx', (anim) => {
-        var diosayudame = new THREE.AnimationMixer(personaje);
-        idle = diosayudame.clipAction(anim.animations[0]);
-        idle.weight = 1;
-        idle.play();
-        mixers.push(diosayudame);
+      const anim1 = new THREE.FBXLoader();
+      anim1.load('resources/jugador2/Idle.fbx', (anim) => {
+        var animation = new THREE.AnimationMixer(personaje);
+        personaje.idle = animation.clipAction(anim.animations[0]);
+        // personaje.idle.weight = 1;
+        personaje.idle.play();
+        mixers.push(animation);
       });
 
       const anim2 = new THREE.FBXLoader();
       anim2.load('resources/jugador2/Running.fbx', (anim) => {
-        var diosayudame2 = new THREE.AnimationMixer(personaje);
-        run = diosayudame2.clipAction(anim.animations[0]);
-        run.weight = 0;
-        run.play();
-        mixers.push(diosayudame2);
+        var animation = new THREE.AnimationMixer(personaje);
+        personaje.run = animation.clipAction(anim.animations[0]);
+        //personaje.run.weight = 0;
+        //personaje.run.play();
+        mixers.push(animation);
       });
 
       const anim3 = new THREE.FBXLoader();
       anim3.load('resources/jugador2/Jumping.fbx', (anim) => {
-        var diosayudame2 = new THREE.AnimationMixer(personaje);
-        jump = diosayudame2.clipAction(anim.animations[0]);
-        jump.weight = 0;
-        jump.play();
-        mixers.push(diosayudame2);
+        var animation = new THREE.AnimationMixer(personaje);
+        personaje.jump = animation.clipAction(anim.animations[0]);
+        //personaje.jump.weight = 0;
+        //personaje.jump.play();
+        mixers.push(animation);
       });
+
       scene.add(personaje);
     }, (xhr) => {
       console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
@@ -103,15 +104,38 @@ $(document).ready(function () {
     var player = snap.val();
     var key = snap.key;
     var nombre = player.nombre;
+    let action = player.action;
     let personajePrincipalxd = scene.getObjectByName(nombre);
 
-    //  for (var i = 0; i < jugadores.length; i++) {
-    //   if (jugadores[i].key == key) {
-    personajePrincipalxd.rotation.y = player.rotation.y;
-    personajePrincipalxd.position.z = player.position.z;
-    personajePrincipalxd.position.x = player.position.x;
-    // }
-    //}
+    for (var i = 0; i < jugadores.length; i++) {
+      if (jugadores[i].key == key) {
+        personajePrincipalxd.rotation.y = player.rotation.y;
+        personajePrincipalxd.position.z = player.position.z;
+        personajePrincipalxd.position.x = player.position.x;
+
+        console.log(action);
+
+        if (action == "run") {
+          personajePrincipalxd.idle.stop();
+          personajePrincipalxd.run.play();
+        }
+        else if (action == "idle") {
+          personajePrincipalxd.run.stop();
+          personajePrincipalxd.idle.play();
+        }
+        else if (action == "jump") {
+          personajePrincipalxd.run.stop();
+          personajePrincipalxd.idle.stop();
+          personajePrincipalxd.jump.play();
+          setTimeout(() => {
+            personajePrincipalxd.jump.stop();
+          }, 1700)
+
+        }
+
+
+      }
+    }
 
   });
 
@@ -122,7 +146,7 @@ $(document).ready(function () {
     var position = { x: 0, y: 2, z: 0 };
     var rotation = { x: 0, y: 0, z: 0 };
     let nombre = document.querySelector("#txtName").value;
-
+    let action = "idle";
     userName = nombre;
 
     var newPlayer = dbRefPlayers.push();
@@ -130,6 +154,7 @@ $(document).ready(function () {
       nombre,
       position,
       rotation,
+      action,
     });
   });
 });
@@ -219,6 +244,8 @@ function onKeyDown(event) {
 
 function onKeyUp(event) {
   keys[String.fromCharCode(event.keyCode)] = false;
+  run = false;
+  jump = false;
 }
 
 function render() {
@@ -227,19 +254,26 @@ function render() {
 
   var yaw = 0;				//leff or right
   var forward = 0; 		//forward backward
-  var currentPlayer;
   var currentKey;
   var place;
 
   if (keys["A"]) {
     yaw = 5;
-  } else if (keys["D"]) {
+    run = true;
+  } if (keys["D"]) {
     yaw = -5;
+    run = true;
   }
   if (keys["W"]) {
     forward = -5;
-  } else if (keys["S"]) {
+    run = true;
+  } if (keys["S"]) {
     forward = 5;
+    run = true;
+  }
+  if (keys["M"]) {
+    run = true;
+    jump = true;
   }
 
   for (var i = 0; i < jugadores.length; i++) {
@@ -253,7 +287,7 @@ function render() {
 
   if (update) {
 
-    man = scene.getObjectByName("rock");
+    //    man = scene.getObjectByName("rock");
     personajePrincipal = scene.getObjectByName(currentPlayer.nombre);
     personajePrincipal.rotation.y += yaw * deltaTime;
     personajePrincipal.translateZ(forward * deltaTime);
@@ -261,27 +295,37 @@ function render() {
     currentPlayer.rotation.y = personajePrincipal.rotation.y;
     currentPlayer.position.x = personajePrincipal.position.x;
     currentPlayer.position.z = personajePrincipal.position.z;
-    //updateFirebase(currentPlayer, currentKey);
+    currentPlayer.action = "idle";
+
+    if (run) {
+      personajePrincipal.run.play();
+      currentPlayer.action = "run";
+    }
+    else {
+      personajePrincipal.run.stop();
+      currentPlayer.action = "idle";
+    }
+
+    if (jump) {
+      personajePrincipal.jump.play();
+      currentPlayer.action = "jump";
+      setTimeout(() => {
+        personajePrincipal.jump.stop();
+      }, 1700)
+    }
+
+    //  console.log(currentPlayer);
+    updateFirebase(currentPlayer, currentKey);
 
 
-
-
-    //console.log(personajePrincipal.children[1].geometry.computeBoundingBox());
-    //console.log(cube);
-
-
+    /*
     try {
-      // var scenary = new THREE.FBXLoader();
-      let cube1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-      cube1BB.setFromObject(personajePrincipal);
+
+      let personajePrincipalBB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+      personajePrincipalBB.setFromObject(personajePrincipal);
 
       let cube2BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
       cube2BB.setFromObject(man);
-
-      //console.log(cube1BB);
-
-      // smile = detectCollision(personajePrincipal, man);
-      //console.log(smile);
 
       if (cube2BB.intersectsBox(cube1BB)) {
         console.log("xd")
@@ -289,53 +333,28 @@ function render() {
       else {
         console.log("dx");
       }
-
     } catch (error) {
       console.log(error);
     }
+  */
+  }
 
-
+  if (mixers.length > 0) {
+    for (var i = 0; i < mixers.length; i++) {
+      mixers[i].update(deltaTime);
+    }
   }
 
   renderer.render(scene, camera);
 }
-//geometry.boundingBox
-function detectCollision(object1, object2) {
-
-  for (var i = 0; i < object1.children.length; i++) {
-
-    for (var j = 0; j < object2.children.length; j++) {
-
-      object1.children[i].geometry.computeBoundingBox();
-      object2.children[i].geometry.computeBoundingBox();
-      object1.updateMatrixWorld();
-      object2.updateMatrixWorld();
-
-      var box1 = object1.children[i].geometry.boundingBox.clone();
-      box1.applyMatrix4(object1.matrixWorld);
-
-      var box2 = object2.children[i].geometry.boundingBox.clone();
-      box2.applyMatrix4(object2.matrixWorld);
-      if (box1.intersectsBox(box2)) {
-        return true;
-        console.log("dahyun");
-        break;
-      }
-
-    }
-
-  }
-
-  return false;
-}
-
 
 function updateFirebase(currentPlayer, currentKey) {
   const dbRefPlayers = firebase.database().ref().child(`jugadores/${currentKey}`);
   dbRefPlayers.update({
     nombre: currentPlayer.nombre,
     position: currentPlayer.position,
-    rotation: currentPlayer.rotation
+    rotation: currentPlayer.rotation,
+    action: currentPlayer.action,
   })
 }
 
@@ -364,54 +383,8 @@ function cargar_objetos() {
   });
   //SCENERY
 
-
-  var newplayer = new THREE.FBXLoader();
-  newplayer.load('resources/jugador2/Ch45_nonPBR.fbx', function (personaje) {
-    personaje.position.y = -4;      //altura estaba en 2 xd
-    personaje.position.x = -15;    //izq-der
-    personaje.position.z = -15;    //profundidad lejor o cerca
-    personaje.scale.set(0.05, 0.05, 0.05);
-
-    const anim = new THREE.FBXLoader();
-    anim.load('resources/jugador2/Idle.fbx', (anim) => {
-      var diosayudame = new THREE.AnimationMixer(personaje);
-      idle = diosayudame.clipAction(anim.animations[0]);
-      idle.weight = 1;
-      idle.play();
-      mixers.push(diosayudame);
-    });
-
-    const anim2 = new THREE.FBXLoader();
-    anim2.load('resources/jugador2/Running.fbx', (anim) => {
-      var diosayudame2 = new THREE.AnimationMixer(personaje);
-      run = diosayudame2.clipAction(anim.animations[0]);
-      run.weight = 0;
-      run.play();
-      mixers.push(diosayudame2);
-    });
-
-    const anim3 = new THREE.FBXLoader();
-    anim3.load('resources/jugador2/Jumping.fbx', (anim) => {
-      var diosayudame2 = new THREE.AnimationMixer(personaje);
-      jump = diosayudame2.clipAction(anim.animations[0]);
-      jump.weight = 0;
-      jump.play();
-      mixers.push(diosayudame2);
-    });
-    scene.add(personaje);
-  }, (xhr) => {
-    console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-  });
-
-
-
-
-
-
-
-
-  var purple1 = new THREE.FBXLoader();
-  purple1.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var purpleBox1 = new THREE.FBXLoader();
+  purpleBox1.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
     object_purple_square.position.z = -15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = -15;      //izq derecha
@@ -420,8 +393,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple2 = new THREE.FBXLoader();
-  purple2.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var redBox1 = new THREE.FBXLoader();
+  redBox1.load('resources/Escena1/Models/CubosMemoria/cuboRojo.fbx', function (object_purple_square) {
     object_purple_square.position.z = -15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 0;      //izq derecha
@@ -430,8 +403,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple3 = new THREE.FBXLoader();
-  purple3.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var blackBox1 = new THREE.FBXLoader();
+  blackBox1.load('resources/Escena1/Models/CubosMemoria/cuboTrampa.fbx', function (object_purple_square) {
     object_purple_square.position.z = -15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 15;      //izq derecha
@@ -440,8 +413,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple4 = new THREE.FBXLoader();
-  purple4.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var orangeBox1 = new THREE.FBXLoader();
+  orangeBox1.load('resources/Escena1/Models/CubosMemoria/cuboNaranja.fbx', function (object_purple_square) {
     object_purple_square.position.z = 0;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = -15;      //izq derecha
@@ -450,8 +423,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple5 = new THREE.FBXLoader();
-  purple5.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var greenBox1 = new THREE.FBXLoader();
+  greenBox1.load('resources/Escena1/Models/CubosMemoria/cuboVerde.fbx', function (object_purple_square) {
     object_purple_square.position.z = 0;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 0;      //izq derecha
@@ -460,8 +433,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple6 = new THREE.FBXLoader();
-  purple6.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var redBox2 = new THREE.FBXLoader();
+  redBox2.load('resources/Escena1/Models/CubosMemoria/cuboRojo.fbx', function (object_purple_square) {
     object_purple_square.position.z = 0;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 15;      //izq derecha
@@ -470,8 +443,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple7 = new THREE.FBXLoader();
-  purple7.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var greenBox2 = new THREE.FBXLoader();
+  greenBox2.load('resources/Escena1/Models/CubosMemoria/cuboVerde.fbx', function (object_purple_square) {
     object_purple_square.position.z = 15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = -15;      //izq derecha
@@ -480,8 +453,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  var purple8 = new THREE.FBXLoader();
-  purple8.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var orangeBox2 = new THREE.FBXLoader();
+  orangeBox2.load('resources/Escena1/Models/CubosMemoria/cuboNaranja.fbx', function (object_purple_square) {
     object_purple_square.position.z = 15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 0;      //izq derecha
@@ -490,8 +463,8 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  purple9 = new THREE.FBXLoader();
-  purple9.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
+  var purpleBox2 = new THREE.FBXLoader();
+  purpleBox2.load('resources/Escena1/Models/CubosMemoria/cuboMorado.fbx', function (object_purple_square) {
     object_purple_square.position.z = 15;    //lejos o cercs
     object_purple_square.position.y = -1.5;      //altura
     object_purple_square.position.x = 15;      //izq derecha
@@ -500,13 +473,19 @@ function cargar_objetos() {
     scene.add(object_purple_square)
   });
 
-  collisionObjects.push(purple1);
-  collisionObjects.push(purple2);
-  collisionObjects.push(purple3);
-  collisionObjects.push(purple4);
-  collisionObjects.push(purple5);
-  collisionObjects.push(purple6);
-  collisionObjects.push(purple7);
-  collisionObjects.push(purple8);
-  collisionObjects.push(purple9);
+
+
+
+
+
+  /*  collisionObjects.push(purple1);
+    collisionObjects.push(purple2);
+    collisionObjects.push(purple3);
+    collisionObjects.push(purple4);
+    collisionObjects.push(purple5);
+    collisionObjects.push(purple6);
+    collisionObjects.push(purple7);
+    collisionObjects.push(purple8);
+    collisionObjects.push(purple9);
+  */
 }
