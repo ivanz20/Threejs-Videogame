@@ -33,6 +33,7 @@ var update = false;
 let personajePrincipal;
 var purple9;
 var collisionObjects = [];
+var specialObjects = [];
 var col;
 let supreme;
 let man;
@@ -60,6 +61,13 @@ let orangeValidator1 = true;
 let orangeValidator2 = false;
 //
 let auxPlayer = [];
+let power1;
+let power2;
+let powers = false;
+let disable = false;
+let unaVez = false;
+let flagPower1 = false;
+let flagPower2 = false;
 
 $(document).ready(function () {
   setupScene();
@@ -146,12 +154,6 @@ $(document).ready(function () {
     let personajePrincipalxd = scene.getObjectByName(nombre);
     let array = player.boxPosition;
 
-    //check what user we're talking about :p
-
-
-    //console.log(auxPlayer);
-
-
     for (var i = 0; i < jugadores.length; i++) {//ANIMATIONS
       if (jugadores[i].key == key) {
         personajePrincipalxd.rotation.y = player.rotation.y;
@@ -201,7 +203,9 @@ $(document).ready(function () {
       }
 
       if (temp.includes("purpleBox1") && temp.includes("purpleBox2") && purpleValidator1 == true) {
-        //console.log("ya se pueden retirar los rosas");
+        //        console.log("ya se pueden retirar los rosas");
+        purpleValidator1 = false;
+        purpleValidator2 = true;
 
         for (let j = 0; j < auxPlayer.length; j++) {
           if (nombre == auxPlayer[j].nombre) {
@@ -212,8 +216,6 @@ $(document).ready(function () {
             console.log(auxPlayer[j].score);
           }
         }
-
-        purpleValidator2 = true;
 
         for (let i = 0; i < collisionObjects.length; i++) {
 
@@ -243,6 +245,7 @@ $(document).ready(function () {
         }
 
         redValidator2 = true;
+        redValidator1 = false;
 
         for (let i = 0; i < collisionObjects.length; i++) {
 
@@ -271,6 +274,7 @@ $(document).ready(function () {
           }
         }
 
+        greenValidator1 = false;
         greenValidator2 = true;
 
         for (let i = 0; i < collisionObjects.length; i++) {
@@ -301,6 +305,7 @@ $(document).ready(function () {
         }
 
         orangeValidator2 = true;
+        orangeValidator1 = false;
 
         for (let i = 0; i < collisionObjects.length; i++) {
 
@@ -503,7 +508,7 @@ function setupScene() {
   ////////////AÑADO OBJETOS A MI ESCENA///////////////////
   scene.add(ambientLight);
   scene.add(directionalLight);
-  scene.add(cube);
+  //scene.add(cube);
   //scene.add(grid);
 }
 
@@ -527,19 +532,44 @@ function render() {
   var place;
 
   if (keys["A"]) {
-    yaw = 6.5;
-    run = true;
-  } if (keys["D"]) {
-    yaw = -6.5;
+
+    if (flagPower1 == true) {
+      yaw = 2;
+    } else {
+      yaw = 6.5;
+    }
     run = true;
   }
+
+  if (keys["D"]) {
+    if (flagPower1 == true) {
+      yaw = -2;
+    }
+    else {
+      yaw = -6.5;
+    }
+    run = true;
+  }
+
   if (keys["W"]) {
-    forward = -15;
-    run = true;
-  } if (keys["S"]) {
-    forward = 15;
+    if (flagPower1 == true) {
+      forward = -4;
+    }
+    else {
+      forward = -15;
+    }
     run = true;
   }
+
+  if (keys["S"]) {
+    if (flagPower1 == true) {
+      forward = 4;
+    } else {
+      forward = 15;
+    }
+    run = true;
+  }
+
   if (keys["M"]) {
     run = true;
     jump = true;
@@ -551,9 +581,16 @@ function render() {
     }
   }
 
-  if (jugador1Ready == true && jugador2Ready == true) { //now i can play
-    //if (jugador1Ready == false && jugador2Ready == false) { //now i can play
-    //console.log("you can play");
+  if (powers == true) {
+    power1 = scene.getObjectByName("power1");
+    power1.rotation.y += 0.05;
+
+    power2 = scene.getObjectByName("power2");
+    power2.rotation.y -= 0.05;
+  }
+
+  if (jugador1Ready == true && jugador2Ready == true && disable == false) { //now i can play
+
     for (var i = 0; i < jugadores.length; i++) {
       if (jugadores[i].player.nombre == userName) {
         currentPlayer = jugadores[i].player;
@@ -566,8 +603,14 @@ function render() {
     if (update) {
 
       personajePrincipal = scene.getObjectByName(currentPlayer.nombre);
-      personajePrincipal.rotation.y += yaw * deltaTime;
-      personajePrincipal.translateZ(forward * deltaTime);
+
+      if (flagPower2 == true) {
+        personajePrincipal.rotation.y -= yaw * deltaTime;
+        personajePrincipal.translateZ((-forward) * deltaTime);
+      } else {
+        personajePrincipal.rotation.y += yaw * deltaTime;
+        personajePrincipal.translateZ(forward * deltaTime);
+      }
 
       currentPlayer.rotation.y = personajePrincipal.rotation.y;
       currentPlayer.position.x = personajePrincipal.position.x;
@@ -603,9 +646,9 @@ function render() {
 
         let purpleBox1BB = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 
+        //COLISIONES CON CAJAS
         for (var i = 0; i < collisionObjects.length; i++) {
           purpleBox1BB.setFromObject(collisionObjects[i]);
-
           if (purpleBox1BB.intersectsBox(personajePrincipalBB) && salta == true) {
             //collisionObjects[i].position.y = 1;
             //collisionObjects[i].rotation.x = 3.1;
@@ -614,14 +657,66 @@ function render() {
             break;
           }
         }
+
+        //COLISIONE CON OBJETOS ESPECIALES XD
+        let especial1 = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+        let especial2 = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+        especial1.setFromObject(specialObjects[0]);
+        especial2.setFromObject(specialObjects[1]);
+
+        if (especial1.intersectsBox(personajePrincipalBB)) {
+          //console.log("power 1"); //reducir velcidad
+          flagPower1 = true;
+          setTimeout(() => {
+            flagPower1 = false;
+          }, 8000)
+        }
+
+        if (especial2.intersectsBox(personajePrincipalBB)) {
+          //console.log("power 2"); //cambiar controles
+          flagPower2 = true;
+          setTimeout(() => {
+            flagPower2 = false;
+          }, 8000)
+        }
+
       } catch (error) {
         console.log(error);
       }
       updateFirebase(currentPlayer, currentKey, objectPos);
     }
   }
+
+  if (purpleValidator2 == true &&
+    greenValidator2 == true &&
+    orangeValidator2 == true &&
+    redValidator2 == true) {
+
+    personajePrincipal.jump.stop();
+    personajePrincipal.run.stop();
+    personajePrincipal.idle.play();
+    disable = true;
+
+    if (unaVez == false) {
+      console.log("Game over");
+      console.log("Puntuacion Final");
+      unaVez = true;
+
+      for (var i = 0; i < jugadores.length; i++) {
+        currentKey = jugadores[i].key;
+        console.log(auxPlayer[i].nombre + ":  " + auxPlayer[i].score);
+        updateFirebaseRemaster(currentKey, (auxPlayer[i].score));
+      }
+    }
+
+    //IVAN aqui ya pones un modal y muestras las puntuaciones y para el inicio
+    //aqui ya no se pueden mover
+  }
+
   renderer.render(scene, camera);
 }
+
+
 
 function updateFirebase(currentPlayer, currentKey, objectPos) {
   const dbRefPlayers = firebase.database().ref().child(`jugadores/${currentKey}`);
@@ -635,7 +730,20 @@ function updateFirebase(currentPlayer, currentKey, objectPos) {
   })
 }
 
+function updateFirebaseRemaster(currentKey, score) {
+  const dbRefPlayers = firebase.database().ref().child(`jugadores/${currentKey}`);
+
+  dbRefPlayers.update({
+    score: score,
+  })
+}
+
 function cargar_objetos() {
+
+  setTimeout(() => {
+    powers = true;
+  }, 2700)
+
   //ENVIRONMENT
   const load_environment = new THREE.CubeTextureLoader();
   const texture = load_environment.load([
@@ -803,4 +911,32 @@ function cargar_objetos() {
     collisionObjects.push(object_purple_square);
     scene.add(object_purple_square)
   });
+
+
+  var power1 = new THREE.FBXLoader();
+  power1.load('resources/Habilidades/lentitud.fbx', function (object_purple_square) {
+    object_purple_square.position.z = 0;    //lejos o cercs
+    object_purple_square.position.y = 0;      //altura
+    object_purple_square.position.x = 0;      //izq derecha
+    object_purple_square.rotation.y = 3.2;
+    object_purple_square.scale.set(0.01, 0.01, 0.01);
+    object_purple_square.name = "power1";
+    specialObjects.push(object_purple_square);
+    scene.add(object_purple_square)
+  });
+
+  var power2 = new THREE.FBXLoader();
+  power2.load('resources/Habilidades/velocidad.fbx', function (object_purple_square) {
+    object_purple_square.position.z = 0;    //lejos o cercs
+    object_purple_square.position.y = -1.4;      //altura
+    object_purple_square.position.x = -30;      //izq derecha
+    object_purple_square.rotation.y = 3.2;
+    object_purple_square.scale.set(0.01, 0.01, 0.01);
+    object_purple_square.name = "power2";
+    specialObjects.push(object_purple_square);
+    scene.add(object_purple_square)
+  });
+
+
+
 }
