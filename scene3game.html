@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Rush</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+    integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <button id="btn-pausa">PAUSA</button>
+  <button id="btn-reiniciar" >REINICIAR</button>
+
+  <div id="modal-pausa" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <h2 class="mx-auto">Pausa</h2>
+      <br>
+      <button class="close" id="keepplaying">Reanudar</button>
+      <br>
+      <button id="btn-configuracion-pausa">Configuración</button>
+      <br>
+      <button id="btn-abandonar">Abandonar Partida</button>
+
+    </div>
+
+  </div>
+
+  <main id="scene-section">
+
+  </main>
+
+  <div id="modal-ganaste" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <h2 class="mx-auto">VICTORIA</h2>
+      <p class="mx-auto">¡Feliciades ganaste el modo de un jugador!</p>
+           <br>
+      <button id="btn-multi">SALIR</button>
+
+      <br>
+
+    </div>
+
+  </div>
+
+  <div id="modal-configuracion-pausa" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <h2 class="mx-auto">Configuracion del juego</h2>
+      <br>
+      <p>Sonido de Musica</p>
+      <button id="sonido-musica">ON</button>
+      <br>
+      <p>Sonido de Juego</p>
+      <button id="sonido-juego">ON</button>
+      <br>
+      
+      <br>
+      <button id="cerrar-config">Cerrar</button>
+
+    </div>
+
+  </div>
+
+  <script type="text/javascript" src="script/jquery-2.1.4.min.js"></script>
+  <script type="text/javascript" src="script/three.js"></script>
+  <script type="text/javascript" src="script/MTLLoader.js"></script>
+  <script type="text/javascript" src="script/FBXLoader.js"></script>
+  <script type="text/javascript" src="script/OBJLoader.js"></script>
+  <script type="text/javascript" src="script/inflate.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+  <script type="module" src="script/escena3.js"></script>
+</body>
+
+</html>

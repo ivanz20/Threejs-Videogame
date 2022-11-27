@@ -1,0 +1,277 @@
+@import url('https://fonts.googleapis.com/css2?family=Reem+Kufi+Ink&display=swap');
+
+
+#btn-pausa{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    font-weight: bold;
+    position: absolute;
+    z-index: 1001;
+    margin-left: 92%;
+    margin-top: 2%;
+    padding: 20px;
+    background-color: rgb(17, 17, 20);
+    border: none;
+    color: white;
+    border-radius: 20px;
+    transition: 0.5s ease-in-out;
+
+}
+#btn-pausa:hover{
+    background-color: white;
+    color: black;
+    transition: 0.5s ease-in-out;
+
+}
+#btn-reiniciar{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    font-weight: bold;
+    position: absolute;
+    z-index: 1001;
+    margin-left: 2%;
+    margin-top: 1%;
+    padding: 20px;
+    background-color: rgb(17, 17, 20);
+    border: none;
+    color: white;
+    border-radius: 20px;
+    transition: 0.5s ease-in-out;
+
+}
+#btn-reiniciar:hover{
+    background-color: white;
+    color: black;
+    transition: 0.5s ease-in-out;
+
+}
+#btn-jugar{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    position: absolute;
+    font-size: 50px;
+    z-index: 1001;
+    color: white;
+    top: 48%;
+    left: 9%;
+    cursor: pointer;
+    transition: 0.3s;
+    background-color: transparent;
+    outline: none;
+    border: none;
+}
+#btn-jugar:hover{
+    color:yellow;
+    transition: 0.3s;
+    transform: scale(1.1);
+
+}
+#btn-configuracion{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    position: absolute;
+    font-size: 50px;
+    z-index: 1001;
+    color: white;
+    top: 59%;
+    left: 9%;
+    cursor: pointer;
+    transition: 0.3s;
+    background-color: transparent;
+    outline: none;
+    border: none;
+}
+#btn-configuracion:hover{
+    color:yellow;
+    transition: 0.3s;
+    transform: scale(1.1);
+
+}
+#btn-puntuaciones{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    position: absolute;
+    font-size: 50px;
+    z-index: 1001;
+    color: white;
+    top: 59%;
+    left: 9%;
+    cursor: pointer;
+    transition: 0.3s;
+    background-color: transparent;
+    outline: none;
+    border: none;
+}
+
+#btn-puntuaciones:hover{
+    color:yellow;
+    transition: 0.3s;
+    transform: scale(1.1);
+
+}
+
+.menu>img{
+    max-width: 90%;
+    /*left:400px; /* play around with this */
+    left: -1000px;
+    position:absolute;
+    top:30px; /* and play around with this */
+    z-index: 1000;
+    transition: 3s ease-in-out;
+}
+#fondo-index{
+    height:auto;
+    margin-left:auto;
+    margin-right:auto;
+    position:relative; /* and this has to be relative */
+    width:auto;
+}
+#fog-index{
+    max-width: 100%;
+    height: auto;
+    left: 200px;
+    position:absolute;
+    top:0px; /* and play around with this */
+    z-index: 999;
+    transition: 2s ease-in-out;
+    transform: rotateY(180deg);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: 1s ease-in-out;
+}
+body{
+    overflow: hidden;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    padding-left: 30%;
+    padding-right: 30%;
+  }
+  .modal > div > table{
+    color: white !important;
+  }
+
+  /* Modal Content/Box */
+  .modal-content {
+    font-family: 'Reem Kufi Ink', sans-serif;
+    background-color: rgb(17, 17, 20) !important;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 50px;
+    color: white !important;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 25px !important;
+  }
+  .modal-content > button {
+    font-family: 'Reem Kufi Ink', sans-serif;
+    background-color: rgb(78, 78, 133) !important;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    color: white;
+    transition: 0.5s ease-in-out;
+  }
+  .modal-content > button:hover{
+    background-color: aliceblue !important;
+    color: black;
+    transition: 0.5s ease-in-out;
+    transform: scale(1.05);
+  }
+  .modal-content > select{
+    border-radius: 10px;
+    padding: 5px;
+  }
+  #modal-pausa{
+    display: none;
+  }
+
+  #modal-configuracion-pausa{
+    display: none;
+  }
+
+  #modal-ganaste{
+    display: none;
+  }
+
+  #modal-perdiste{
+    display: none;
+  }
+
+  #modal-ganarmulti{
+    display: none;
+  }
+  
+  #txtName{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    position: absolute;
+    z-index: 1003;
+    width: 140px;
+    left: 125px;
+    top: 50px;
+    padding: 5px;
+    font-size: small;
+    height: 40px;
+    border-radius: 0px 10px 10px 0px;
+  }
+
+  #foto-hud{
+    position: absolute;
+    z-index: 1002;
+    top: -180px;
+    left: -100px;
+    transform: scale(0.8);
+  }
+
+  #boton{
+    font-family: 'Reem Kufi Ink', sans-serif;
+    color: white;
+    position: absolute;
+    z-index: 1003;
+    width: 40px;
+    left: 265px;
+    top: 44px;
+    padding: 2px;
+    font-size: x-small;
+    height: 55px;
+    border-radius: 0px 10px 10px 0px;
+    background-color: black;
+    transition: 0.2s ease-in-out;
+
+  }
+  #boton:hover{
+    transform: scale(1.1);
+    transition: 0.2s ease-in-out;
+  }
+  /* The Close Button */
+ 
+  /* The Close Button */
+ #score-p1{
+  font-family: 'Reem Kufi Ink', sans-serif;
+  font-weight: bold;
+  font-size: x-large;
+  position: absolute;
+  z-index: 1005;
+  margin-left: 5%;
+  top: 580px;
+  color: rgb(242, 255, 0);
+  transition: 0.5s ease-in-out;
+  display: none;
+ }
+
+ #score-p2{
+  font-family: 'Reem Kufi Ink', sans-serif;
+  font-weight: bold;
+  font-size: x-large;
+  position: absolute;
+  z-index: 1005;
+  margin-left: 5%;
+  top: 620px;
+  color: rgb(242, 255, 0);
+  transition: 0.5s ease-in-out;
+  display: none;
+ }
